@@ -1,6 +1,10 @@
 application:
   subdomain: radarr
   multi_instance: false
+  # This app authenticates its own users, so it is exposed directly
+  # instead of sitting behind the platform login gate.
+  public_path:
+    - /
   upstreams:
     - location: /package-licenses/
       backend: file:///lzcapp/pkg/content/licenses/
@@ -47,7 +51,8 @@ usage: |
     下载目录在 /lzcapp/var/downloads。卸载应用会一并删除，请定期备份。
   - 登录账号密码来自安装参数，密码默认随机生成，不存在内置弱口令；
     首次启动即写入配置并启用表单登录，不存在无鉴权窗口期。
-  - 应用经懒猫入口鉴权访问。
+  - 应用直接对外开放，由应用自己的登录页鉴权：
+    自带账号体系的服务再套一层平台鉴权会造成重复登录，所以用 public_path。
 
   说明：
   - 单容器部署，使用内置 SQLite，无需额外数据库。
