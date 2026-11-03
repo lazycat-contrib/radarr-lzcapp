@@ -1,0 +1,21 @@
+params:
+  - id: admin_username
+    type: string
+    name: Login username
+    description: "Username for the Radarr web UI."
+    default_value: "admin"
+    optional: false
+  - id: admin_password
+    type: secret
+    name: Login password
+    description: "Password for the Radarr web UI, at least 12 characters."
+    default_value: "$random(len=20)"
+    optional: false
+locales:
+  zh:
+    admin_username:
+      name: 登录用户名
+      description: Radarr 网页界面的登录用户名。
+    admin_password:
+      name: 登录密码
+      description: Radarr 网页界面的登录密码，至少 12 位。默认随机生成，不存在内置弱口令。

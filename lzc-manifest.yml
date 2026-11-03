@@ -1,0 +1,56 @@
+application:
+  subdomain: radarr
+  multi_instance: false
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://radarr:7878/
+
+services:
+  radarr:
+    # upstream: linuxserver/radarr:6.4.4
+    image: docker.1ms.run/linuxserver/radarr:6.4.4
+    entrypoint:
+      - /lzcapp/pkg/content/entrypoint.sh
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      # Read by the entrypoint to seed config.xml on first boot; Radarr hashes
+      # the password itself, so a plain value is what it expects.
+      - |-
+        RADARR_ADMIN_USERNAME={{ .U.admin_username }}
+      - |-
+        RADARR_ADMIN_PASSWORD={{ .U.admin_password }}
+    binds:
+      # database, config.xml and logs live here
+      - /lzcapp/var/config:/config
+      - /lzcapp/var/movies:/movies
+      - /lzcapp/var/downloads:/downloads
+      - /lzcapp/pkg/content:/lzcapp/pkg/content:ro
+
+usage: |
+  Radarr 是电影收藏管理工具：订阅影片自动追新，并整理成规范的媒体库。
+
+  使用方法：
+  1. 打开应用，用你安装时设置的用户名和密码登录。
+  2. 先在"设置 → 媒体管理"里确认根目录（默认 /movies）。
+  3. 添加"索引器"（Indexer）和"下载客户端"（Download Client），
+     比如 Transmission、qBittorrent 或 SABnzbd。
+  4. 搜索想收藏的电影并添加，Radarr 会按质量偏好自动筛选下载，
+     完成后重命名归位。也能设定"已上映才下载"避免抢跑。
+  5. 在"日历"里能看到即将上映和已入库的影片。
+
+  数据与安全：
+  - 数据库、配置和日志都在 /lzcapp/var/config，媒体库在 /lzcapp/var/movies，
+    下载目录在 /lzcapp/var/downloads。卸载应用会一并删除，请定期备份。
+  - 登录账号密码来自安装参数，密码默认随机生成，不存在内置弱口令；
+    首次启动即写入配置并启用表单登录，不存在无鉴权窗口期。
+  - 应用经懒猫入口鉴权访问。
+
+  说明：
+  - 单容器部署，使用内置 SQLite，无需额外数据库。
+  - 已关闭容器内自动更新，版本由商店统一管理。
+  - 需要自行准备索引器与下载客户端才能实际下载内容；本包不包含这些外部服务。
+  - 未做真机验证：登录、添加影片、对接下载器以及重启后持久化均未在设备上实测。
